@@ -7,6 +7,9 @@ import Filter from './components/Filter';
 let taskData = [];
 let taskList = [];
 
+let active = false;
+let completed = false;
+
 function App(props) {
 
   console.log('Component : App');
@@ -27,30 +30,34 @@ function App(props) {
   }
 
   function toggleTask(taskId) {
-    let otherTasks  = tasks.map(task => {
+
+    taskData  = taskData.map(task => {
       if(task.id == taskId) {
-        if(task.completed === true){
-          return {...task, 'completed' : false};
-        } else {
-          return {...task, 'completed' : true};
-        }
+        return {...task, 'completed': !task.completed};
       } else {
         return task;
       }
     });
-    setTasks(otherTasks);
+
+    if(active) filterActive()
+    if(completed) filterCompleted()
+
   }
 
   function filterAll() {
     setTasks(taskData);
+    active = false;
+    completed = false;
   }
 
   function filterActive() {
+    active = true;
     let activeTasks = taskData.filter(task => task.completed === false);
     setTasks(activeTasks);
   }
 
   function filterCompleted() {
+    completed = true;
     let completedTasks = taskData.filter(task => task.completed === true);
     setTasks(completedTasks);
   }
