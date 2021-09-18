@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import Todo from './components/Todo';
 import Form from './components/Form';
+import Filter from './components/Filter';
 
 let taskData = [];
 let taskList = [];
@@ -56,6 +57,11 @@ function App(props) {
       { tasks.length !== 0 ? <h2>
         {headingText}
       </h2> : null }
+      <div>
+        <Filter name="All"/>
+        <Filter name="Active"/>
+        <Filter name="Completed"/>
+      </div>
     </div>
   );
 }
