@@ -1,23 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from 'react';
+import { nanoid } from 'nanoid';
+import Todo from './components/Todo';
+import Form from './components/Form';
 
-function App() {
+let taskData = [];
+
+let taskList = taskData.map(task => <Todo id={task.id} name={task.name} completed={task.completed}/>);
+
+function App(props) {
+
+  const [ tasks, setTasks ] = useState(taskData);
+
+  taskList = tasks.map(task => <Todo id={task.id} name={task.name} completed={task.completed} removeTask={removeTask} />);    
+
+  function addTask(name) {
+    const newTask = {id : 'todo' + nanoid(),  name : name, 'completed': false};
+    setTasks([...tasks, newTask]);
+  }
+
+  function removeTask(taskId) {
+    let otherTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(otherTasks);
+  }
+
+  const taskNumText = tasks.length !== 1 ? 'tasks' : 'task';
+  const headingText = `${tasks.length} ${taskNumText} remaining`; 
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>TodoList</h1>
+      <Form addTask={addTask}/>
+      <ul>
+        {taskList}
+      </ul>
+      { tasks.length !== 0 ? <h2>
+        {headingText}
+      </h2> : null }
     </div>
   );
 }
