@@ -1,11 +1,12 @@
 
-const Todo = ({id, name, completed, removeTask}) => {
+const Todo = ({id, name, completed, removeTask, toggleTask}) => {
   
+
     return (
       <li>
         <div>
-          <input id="todo-0" type="checkbox" defaultChecked={completed}/>
-          <label htmlFor="todo-0">
+          <input id="todo-0" type="checkbox" defaultChecked={completed} onChange={() => toggleTask(id)} />
+          <label style={{textDecoration : completed ? 'line-through' : 'none'}} htmlFor="todo-0">
             {name}
           </label>
         </div>
