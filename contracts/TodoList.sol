@@ -52,6 +52,8 @@ contract TodoList {
   function deleteTask(uint taskId) public {
     require(taskId <= taskCount, 'ID value greater than total task count');
     require(tasks[taskId].id != 0, 'Task doesnt exist');
+    require(taskCount > 0, 'No tasks found');
+    taskCount--;
     delete tasks[taskId];
     emit TaskDeleted(taskId, tasks[taskId].content, tasks[taskId].completed);
   }

@@ -7,7 +7,7 @@ import Filter from './components/Filter';
 import TodoList from './artifacts/contracts/TodoList.sol/TodoList.json';
 // import { parseUnits } from '@ethersproject/units';
 
-const contractAddress = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
+const contractAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
 
 
 let taskData = [];
@@ -31,19 +31,16 @@ function App(props) {
         
         try {
           taskCount = parseInt((await contract.taskCount()).toString());
-          console.log(taskCount);
           
           let list = [];
           for(let i = 1;i <= taskCount; i += 1) {
             let task = await contract.readTask(i);
             list.push({'id' : task.id, 'name' : task.content, 'completed' : task.completed});
           }
+          taskData = list;
           setTasks(list);
 
-          console.log('connect', taskCount, list);
-
         } catch(error) {
-          console.log('error connect');
           console.error(error);
         }
       }
@@ -112,6 +109,7 @@ function App(props) {
   function filterAll() {
     active = false;
     completed = false;
+    console.log(taskData);
     setTasks(taskData);
   }
 
