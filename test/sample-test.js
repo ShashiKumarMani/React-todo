@@ -19,7 +19,43 @@ describe("Greeter", function () {
 });
 
 describe("TodoList", function () {
-  it('create task', async function () {
-    
+  
+
+  let TodoList ;
+  let todo;
+
+  it('Initial Task Count', async function () {
+    TodoList = await ethers.getContractFactory('TodoList');
+    todo = await TodoList.deploy();
+    await todo.deployed();
+
+    expect(await todo.taskCount()).to.equal(0);
+  });
+
+  it('Create Task', async function () {
+    const tx = await todo.createTask('xyz');
+    await tx.wait();
+    const taskCount = await todo.taskCount();
+    expect(taskCount).to.equal(1);
+
+    expect(Array(await todo.readTask(taskCount))[0][1]).to.equal('xyz');
+  });
+
+  it('Toggle task', async function () {
+    const tx = await todo.createTask('xyz');
+    await tx.wait();
+    const taskCount = await todo.taskCount();
+    expect(Array(await todo.readTask(taskCount))[0][2]).to.equal(false);
+
+    await todo.toggleTask(taskCount);
+    expect(Array(await todo.readTask(taskCount))[0][2]).to.equal(true);
+  });
+
+  it('Delete Task', async function() {
+    let taskCount = await todo.taskCount();
+
+    await todo.deleteTask(taskCount);
+    taskCount = await todo.taskCount();
+    expect(await todo.taskCount()).to.equal(1);
   });
 });
