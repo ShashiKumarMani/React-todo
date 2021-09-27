@@ -6,7 +6,7 @@ import Filter from './components/Filter';
 import './App.css';
 import TodoList from './artifacts/contracts/TodoList.sol/TodoList.json';
 
-const contractAddress = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
+const contractAddress = '0x60C2C4356F962eA400872456d13743c456577DFC';
 
 let taskData = [];
 let taskList = [];
