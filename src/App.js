@@ -3,12 +3,10 @@ import { ethers } from 'ethers';
 import Todo from './components/Todo';
 import Form from './components/Form';
 import Filter from './components/Filter';
-
+import './App.css';
 import TodoList from './artifacts/contracts/TodoList.sol/TodoList.json';
-// import { parseUnits } from '@ethersproject/units';
 
-const contractAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
-
+const contractAddress = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
 
 let taskData = [];
 let taskList = [];
@@ -25,21 +23,24 @@ function App(props) {
     
     async function connect() {
       if(window.ethereum) {
-        console.log(await window.ethereum.request({ method: 'eth_requestAccounts' }));
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const contract = new ethers.Contract(contractAddress, TodoList.abi, provider);
         
         try {
           taskCount = parseInt((await contract.taskCount()).toString());
           
-          let list = [];
-          for(let i = 1;i <= taskCount; i += 1) {
-            let task = await contract.readTask(i);
-            list.push({'id' : task.id, 'name' : task.content, 'completed' : task.completed});
+          if(taskCount > 0) {
+            let list = [];
+            for(let i = 1;i <= taskCount; i += 1) {
+              let task = await contract.readTask(i);
+              list.push({'id' : task.id, 'name' : task.content, 'completed' : task.completed});
+            }
+            taskData = list;
+            setTasks(list);
           }
-          taskData = list;
-          setTasks(list);
-
+          console.log('useEffect');
+        
         } catch(error) {
           console.error(error);
         }
@@ -52,10 +53,8 @@ function App(props) {
     taskCount += 1;
     const newTask = {'id' : taskCount,  'name' : name, 'completed': false};
     taskData.push(newTask);
-    setTasks([...tasks, newTask]);
-
+    setTasks([...tasks]);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    console.log('ChainID : ',provider);
     const signer = provider.getSigner()
     const contract = new ethers.Contract(contractAddress, TodoList.abi, signer)
     const transaction = await contract.createTask(name);
@@ -126,12 +125,11 @@ function App(props) {
   }
 
   taskList = tasks.map(task => <Todo key={task.id} id={task.id} name={task.name} completed={task.completed} removeTask={removeTask} toggleTask={toggleTask}/>);    
-
   const taskNumText = tasks.length !== 1 ? 'tasks' : 'task';
   const headingText = `${taskData.length} ${taskNumText} remaining`; 
 
   return (
-    <div>
+    <div className="container">
       <h1>TodoList</h1>
       <Form addTask={addTask}/>
       <ul>
@@ -140,7 +138,7 @@ function App(props) {
       { taskData.length !== 0 ? <h2>
         {headingText}
       </h2> : null }
-      <div>
+      <div className="filter">
         <Filter name="All" filter={filterAll}/>
         <Filter name="Active" filter={filterActive}/>
         <Filter name="Completed" filter={filterCompleted}/>

@@ -16,7 +16,7 @@ const Form = (props) => {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="form" onSubmit={handleSubmit}>
         <input
             type="text"
             id="new-todo"
@@ -26,7 +26,7 @@ const Form = (props) => {
             placeholder="What needs to be done?"
         />
         <button type="submit">
-            Add
+            Add Task
         </button>
         </form>
     );
