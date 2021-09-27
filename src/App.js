@@ -1,43 +1,87 @@
-import { useState } from 'react';
-import { nanoid } from 'nanoid';
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import Todo from './components/Todo';
 import Form from './components/Form';
 import Filter from './components/Filter';
+
+import TodoList from './artifacts/contracts/TodoList.sol/TodoList.json';
+// import { parseUnits } from '@ethersproject/units';
+
+const contractAddress = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
+
 
 let taskData = [];
 let taskList = [];
 
 let active = false;
 let completed = false;
+let taskCount = 0;
 
 function App(props) {
 
-  // console.log('<----------------------------');
-  // console.log('Component : App');
-
   const [ tasks, setTasks ] = useState([]);
 
-  function addTask(name) {
-    // console.log('add task');
-    const newTask = {'id' : 'todo' + nanoid(),  'name' : name, 'completed': false};
+  useEffect(() => {
+    
+    async function connect() {
+      if(window.ethereum) {
+        console.log(await window.ethereum.request({ method: 'eth_requestAccounts' }));
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const contract = new ethers.Contract(contractAddress, TodoList.abi, provider);
+        
+        try {
+          taskCount = parseInt((await contract.taskCount()).toString());
+          console.log(taskCount);
+          
+          let list = [];
+          for(let i = 1;i <= taskCount; i += 1) {
+            let task = await contract.readTask(i);
+            list.push({'id' : task.id, 'name' : task.content, 'completed' : task.completed});
+          }
+          setTasks(list);
+
+          console.log('connect', taskCount, list);
+
+        } catch(error) {
+          console.log('error connect');
+          console.error(error);
+        }
+      }
+    }
+    connect(); 
+  }, [])  
+ 
+  async function addTask(name) {
+    taskCount += 1;
+    const newTask = {'id' : taskCount,  'name' : name, 'completed': false};
     taskData.push(newTask);
     setTasks([...tasks, newTask]);
-    tasks.map(task => console.log(task.id));
-    // console.log('tasks number [Add]: ',tasks.length);
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    console.log('ChainID : ',provider);
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(contractAddress, TodoList.abi, signer)
+    const transaction = await contract.createTask(name);
+    await transaction.wait();
 
     if(active) filterActive();
     if(completed) filterCompleted();
   }
 
-  function removeTask(taskId) {
-    // console.log('remove task')
+  async function removeTask(taskId) {
     let otherTasks = tasks.filter(task => task.id !== taskId);
     taskData = taskData.filter(task => task.id !== taskId);
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(contractAddress, TodoList.abi, signer)
+    const tx = await contract.deleteTask(taskId);
+    await tx.wait();
+
     setTasks(otherTasks);
   }
 
-  function toggleTask(taskId) {
-    // console.log('toggle');
+  async function toggleTask(taskId) {
     taskData  = taskData.map(task => {
       if(task.id === taskId) {
         return {...task, 'completed': !task.completed};
@@ -53,6 +97,12 @@ function App(props) {
       }
     });
 
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(contractAddress, TodoList.abi, signer)
+    const transaction = await contract.toggleTask(taskId);
+    await transaction.wait();
+
     setTasks(modTasks);
 
     if(active) filterActive();
@@ -60,32 +110,25 @@ function App(props) {
   }
 
   function filterAll() {
-    // console.log('filter all');
     active = false;
     completed = false;
     setTasks(taskData);
   }
 
   function filterActive() {
-    // console.log('filter active')
     active = true;
     let activeTasks = taskData.filter(task => task.completed === false);
     setTasks(activeTasks);
   }
 
   function filterCompleted() {
-    // console.log('filter completed');
     completed = true;
     let completedTasks = taskData.filter(task => task.completed === true);
     setTasks(completedTasks);
   }
 
-  // console.log('tasks number : ',tasks.length);
-
   taskList = tasks.map(task => <Todo key={task.id} id={task.id} name={task.name} completed={task.completed} removeTask={removeTask} toggleTask={toggleTask}/>);    
 
-  // console.log('tasks map()');
-  // console.log('---------------------------->');
   const taskNumText = tasks.length !== 1 ? 'tasks' : 'task';
   const headingText = `${taskData.length} ${taskNumText} remaining`; 
 
