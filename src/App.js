@@ -53,7 +53,7 @@ function App(props) {
     taskCount += 1;
     const newTask = {'id' : taskCount,  'name' : name, 'completed': false};
     taskData.push(newTask);
-    setTasks([...tasks]);
+    setTasks([...tasks, newTask]);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner()
     const contract = new ethers.Contract(contractAddress, TodoList.abi, signer)
